@@ -21,14 +21,14 @@ async def save_fio(message: types.Message, __, manager: DialogManager):
         await message.answer("Введите корректное ФИО.")
 
     user = manager.middleware_data["user"]
-    await user.update_from_dict({"fio": fio}).save()
+    await user.update_from_dict({"fio": fio.title()}).save()
 
     await maybe_next(manager)
 
 
 register_dialog = Dialog(
     Window(
-        Const("Добро пожаловать в Ясяпобеда.рф!\n\nВведите ваше ФИО:"),
+        Const("Добро пожаловать в EduLink!\n\nВведите ваше ФИО:"),
         MessageInput(save_fio, ContentType.TEXT),
         state=RegisterSG.fio,
         preview_add_transitions=[Next()],

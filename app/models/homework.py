@@ -6,5 +6,6 @@ class Homework(Model):
     created_at = fields.DatetimeField(auto_now_add=True)
     owner = fields.ForeignKeyField("models.User")
     container = fields.ForeignKeyField("models.Container")
+    name = fields.TextField()
     text = fields.TextField(null=True)
-    file_id = fields.TextField(null=True)
+    file_id = fields.TextField()

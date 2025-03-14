@@ -48,3 +48,8 @@ def maybe_next(manager: DialogManager) -> Coroutine[None, None, None]:
         return manager.done()
 
     return manager.next()
+
+
+def get_short_fio(fio: str) -> str:
+    names = fio.split()
+    return names[0] + "".join([name[0] for name in names[1:]])
