@@ -10,14 +10,18 @@ from aiogram_dialog.api.exceptions import (
     UnknownIntent,
     UnknownState,
 )
+from aiogram_dialog.widgets.kbd import Start
 from aiogram_dialog.widgets.text import Format
 
 from app.misc import dp
-from app.models import User
+from app.models import User, Container
 from app.states import (
     MainSG,
     RegisterSG,
+    ContainersSG,
+    ContainerCreateSG,
 )
+from app.widgets import Emojize
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +32,34 @@ async def start_cmd(message: types.Message, user: User, dialog_manager: DialogMa
         await dialog_manager.start(RegisterSG.fio, mode=StartMode.RESET_STACK)
         return
 
-    await dialog_manager.start(MainSG.intro, mode=StartMode.RESET_STACK)
+    await dialog_manager.start(
+        MainSG.intro, mode=StartMode.RESET_STACK, show_mode=ShowMode.NO_UPDATE
+    )
+    dialog_manager.show_mode = ShowMode.SEND
+
+    if message.text.startswith("/start cjoin_"):
+        code = message.text[len("/start cjoin_") :]
+        container = await Container.get(invite_code=code).prefetch_related(
+            "owner", "participants"
+        )
+        if container:
+            if user in [container.owner, *container.participants]:
+                await message.answer("Ты уже находишься в этом контейнере.")
+            else:
+                await message.answer(
+                    f"Ты присоединился к контейнеру {container.name}!", parse_mode=None
+                )
+                await container.participants.add(user)
+
+            await dialog_manager.start(
+                ContainersSG.view,
+                {"container_id": container.id},
+            )
+            return
+        else:
+            await message.answer("Контейнер не найден.")
+
+    await dialog_manager.show()
 
 
 @dp.message(Command("show"))
@@ -61,6 +92,16 @@ async def name_getter(user: User, event_from_user: types.User, **_) -> dict[str,
 start_dialog = Dialog(
     Window(
         Format("Привет, {first_name}!"),
+        Start(
+            Emojize(":heavy_plus_sign: Новый контейнер"),
+            "container_create",
+            state=ContainerCreateSG.name,
+        ),
+        Start(
+            Emojize(":package: Контейнеры"),
+            "containers",
+            state=ContainersSG.intro,
+        ),
         state=MainSG.intro,
         getter=name_getter,
     ),

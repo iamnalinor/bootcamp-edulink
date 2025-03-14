@@ -11,7 +11,7 @@ def rnd_id() -> str:
 class Container(Model):
     id = fields.IntField(primary_key=True)
     created_at = fields.DatetimeField(auto_now_add=True)
-    invite_code = fields.TextField(default=lambda: rnd_id)
+    invite_code = fields.TextField(default=rnd_id)
     owner = fields.ForeignKeyField("models.User", related_name="containers_owner")
     name = fields.TextField()
     is_archived = fields.BooleanField(default=False)

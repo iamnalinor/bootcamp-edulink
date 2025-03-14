@@ -21,3 +21,23 @@ class RegisterSG(StatesGroup):
 
 class MainSG(StatesGroup):
     intro = State()
+
+
+class ContainerCreateSG(StatesGroup):
+    name = State()
+    description = State()
+    deadline = State()
+    outro = State()
+
+
+class ContainersSG(StatesGroup):
+    intro = State()
+    view = State()
+    share_link = State()
+    add_homework = State()
+    confirm_archive = State()
+
+
+class HomeworksSG(StatesGroup):
+    intro = State()
+    view = State()

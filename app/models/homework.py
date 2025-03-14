@@ -1,11 +1,4 @@
-import random
-import string
-
 from tortoise import Model, fields
-
-
-def rnd_id() -> str:
-    return "".join(random.choices(string.ascii_letters + string.digits, k=10))
 
 
 class Homework(Model):
@@ -13,3 +6,5 @@ class Homework(Model):
     created_at = fields.DatetimeField(auto_now_add=True)
     owner = fields.ForeignKeyField("models.User")
     container = fields.ForeignKeyField("models.Container")
+    text = fields.TextField(null=True)
+    file_id = fields.TextField(null=True)
