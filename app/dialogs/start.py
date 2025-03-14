@@ -91,7 +91,10 @@ async def name_getter(user: User, event_from_user: types.User, **_) -> dict[str,
 
 start_dialog = Dialog(
     Window(
-        Format("Привет, {first_name}!"),
+        Format(
+            "Привет, {first_name}!\n\n"
+            "<a href='https://www.figma.com/proto/nIJ6EyZJLfZpVtuLm9qmT2/Untitled?page-id=0%3A1&node-id=1-545&p=f&viewport=-60%2C173%2C0.29&t=IshnLMZRA7KhXim3-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=1%3A545'>Открыть макет в Figma</a>"
+        ),
         Start(
             Emojize(":heavy_plus_sign: Новый контейнер"),
             "container_create",
@@ -104,5 +107,6 @@ start_dialog = Dialog(
         ),
         state=MainSG.intro,
         getter=name_getter,
+        disable_web_page_preview=True,
     ),
 )

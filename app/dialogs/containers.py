@@ -1,9 +1,13 @@
+import datetime
+import io
 import logging
 import operator
+import re
 from typing import Any
 
+import PyPDF2
 from aiogram import F, Bot, types
-from aiogram.types import User
+from aiogram.types import User, BufferedInputFile
 from aiogram_dialog import Dialog, Window, DialogManager
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import (
@@ -15,9 +19,12 @@ from aiogram_dialog.widgets.kbd import (
 from aiogram_dialog.widgets.text import Const, Jinja, Case, Format
 from tortoise.expressions import Q
 
+from app import config
 from app.misc import BACK
 from app.models import Container, Homework
+from app.services.gpt import summarize_homework_text
 from app.states import ContainersSG, HomeworksSG
+from app.utils import get_short_fio
 from app.widgets import Emojize, StartWithSameData
 
 logger = logging.getLogger(__name__)
@@ -62,11 +69,50 @@ async def homework_handler(message: types.Message, __, manager: DialogManager) -
         await message.answer("Размер файла должен быть не больше 5 МБ.")
         return
 
+    parts = message.document.file_name.rsplit(".", maxsplit=1)
+    if len(parts) == 1:
+        await message.answer("Неверное имя файла.")
+        return
+
+    file_name, file_ext = parts
+    file_ext = file_ext.lower()
+
+    bot: Bot = manager.middleware_data["bot"]
+    user = manager.middleware_data["user"]
+
+    await message.answer("Обработка...\n\nЭто займет до 30 секунд.")
+
+    f = io.BytesIO()
+    await bot.download(message.document.file_id, f)
+
+    match file_ext:
+        case "pdf":
+            pdf_reader = PyPDF2.PdfReader(f)
+            text = "".join([page.extract_text() for page in pdf_reader.pages])
+            title = "_" + await summarize_homework_text(text)
+        case _:
+            title = re.sub(r"[\s\-]", "-", re.sub(r"[^a-zA-Z0-9\s_\-]", "", file_name))
+
+    name = (
+        get_short_fio(user.fio)
+        + "_"
+        + datetime.datetime.now().strftime("%d_%m")
+        + title
+        + "."
+        + parts[-1]
+    )
+    f.seek(0)
+    sent = await bot.send_document(
+        config.UPLOAD_FILES_CHAT_ID,
+        BufferedInputFile(f.read(), filename=name),
+    )
+
     homework = await Homework.create(
         owner=manager.middleware_data["user"],
         container=await Container.get(id=manager.start_data["container_id"]),
         text=message.text,
-        file_id=message.document.file_id if message.document else None,
+        file_id=sent.document.file_id,
+        name=name,
     )
     await message.answer(f"Отправлено! ID решения — <code>{homework.id}</code>")
     await manager.done()
@@ -119,7 +165,7 @@ containers_dialog = Dialog(
             Emojize(":heavy_plus_sign: Загрузить решение"),
             "add_homework",
             state=ContainersSG.add_homework,
-            when=~F["container"].is_archived & ~F["is_owner"] & ~F["homework_sent"],
+            when=~F["container"].is_archived & ~F["homework_sent"],
         ),
         StartWithSameData(
             Emojize(":mailbox_with_mail: Решения"),
