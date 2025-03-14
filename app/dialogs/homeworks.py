@@ -1,10 +1,15 @@
+import asyncio
+import io
 import logging
 import operator
+import tempfile
+import zipfile
 from datetime import timedelta
+from pathlib import Path
 from typing import Any
 
-from aiogram import types
-from aiogram.types import User
+from aiogram import types, Bot
+from aiogram.types import User, BufferedInputFile
 from aiogram_dialog import Dialog, Window, DialogManager, ShowMode
 from aiogram_dialog.widgets.kbd import (
     Next,
@@ -56,6 +61,39 @@ async def homework_view_getter(dialog_manager: DialogManager, **__) -> dict[str,
     }
 
 
+async def download_homework_all(call: types.CallbackQuery, __, manager: DialogManager):
+    container_id = manager.start_data["container_id"]
+    homeworks = await Homework.filter(container_id=container_id)
+    bot: Bot = manager.middleware_data["bot"]
+
+    await call.answer("Выгружаем решения...")
+
+    zipio = io.BytesIO()
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        await asyncio.wait(
+            [
+                asyncio.create_task(
+                    bot.download(
+                        homework.file_id, f"{tmpdir}/{homework.id}-{homework.name}"
+                    )
+                )
+                for homework in homeworks
+            ]
+        )
+
+        with zipfile.ZipFile(zipio, "w") as zipf:
+            for file in Path(tmpdir).glob("*"):
+                zipf.write(file, file.name)
+
+    await call.message.answer_document(
+        BufferedInputFile(
+            file=zipio.getvalue(), filename=f"container_{container_id}.zip"
+        ),
+    )
+    await manager.show(ShowMode.SEND)
+
+
 async def download_homework(
     call: types.CallbackQuery, __, manager: DialogManager
 ) -> None:
@@ -68,6 +106,11 @@ async def download_homework(
 homeworks_dialog = Dialog(
     Window(
         Emojize(":package: <b>Доступные задания</b>"),
+        Button(
+            Emojize(":inbox_tray: Скачать все"),
+            "download_homework_all",
+            download_homework_all,
+        ),
         ScrollingGroup(
             Select(
                 Format("{item.owner.fio}"),
