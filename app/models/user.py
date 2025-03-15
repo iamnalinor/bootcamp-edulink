@@ -8,7 +8,6 @@ class User(Model):
     created_at = fields.DatetimeField(auto_now_add=True)
     lang_code = fields.CharField(max_length=2, null=True)
     fio = fields.TextField(null=True)
-    lang_code = fields.CharField(max_length=2, null=True)
 
     def __str__(self) -> str:
         return f"User #{self.id} {self.fio or ''}"
