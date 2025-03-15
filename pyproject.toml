@@ -12,7 +12,7 @@ select = [
     "C90",  # mccabe
     "I",  # isort
     "N",  # PEP8 naming
-    "UP",  # pyupgrade
+    "UP",  # pyupmark
     "ANN",  # flake8-annotations
     "B",  # flake8-bugbear
     "A",  # flake8-builtins

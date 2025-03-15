@@ -18,6 +18,6 @@ add-locale:
 	pybabel init -i locales/messages.pot -d locales -l $(LOCALE)
 
 up:
-	docker compose up -d --build
+	docker compose up -d --build --remove-orphans
 
 .PHONY: compile run lint update-messages add-locale

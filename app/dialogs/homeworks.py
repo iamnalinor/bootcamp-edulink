@@ -9,20 +9,25 @@ from pathlib import Path
 from typing import Any
 
 from aiogram import Bot, types
+from aiogram.enums import ContentType
 from aiogram_dialog import Dialog, DialogManager, ShowMode, Window
+from aiogram_dialog.api.entities import MediaAttachment, MediaId
+from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import (
     Button,
     Next,
     ScrollingGroup,
     Select,
 )
+from aiogram_dialog.widgets.media import DynamicMedia
 from aiogram_dialog.widgets.text import Format, Jinja
+from aiogram_dialog.widgets.widget_event import ensure_event_processor
 
 from app.misc import BACK, get_client
 from app.models import Container, Homework
 from app.states import HomeworksSG
 from app.utils import lazy_gettext as _
-from app.widgets import Emojize
+from app.widgets import Emojize, StartWithSameData
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +67,10 @@ async def homework_view_getter(
         "container": container,
         "homework": homework,
         "created_at": created_at,
+        "media": MediaAttachment(
+            ContentType.DOCUMENT, file_id=MediaId(file_id=homework.file_id)
+        ),
+        "has_no_mark": homework.mark is None,
     }
 
 
@@ -112,6 +121,32 @@ async def download_homework(
     await manager.show(ShowMode.SEND)
 
 
+@ensure_event_processor
+async def add_mark_handler(
+    message: types.Message,
+    __: MessageInput,
+    manager: DialogManager,
+) -> None:
+    mark = message.text
+    if not mark.isdigit():
+        await message.answer(_("Оценка должна быть целым неотрицательным числом."))
+        return
+
+    homework_id = manager.start_data["homework_id"]
+    await Homework.filter(id=homework_id).update(mark=int(mark))
+    await manager.done()
+
+
+async def add_empty_mark(
+    call: types.CallbackQuery,
+    __: Button,
+    manager: DialogManager,
+) -> None:
+    homework_id = manager.start_data["homework_id"]
+    await Homework.filter(id=homework_id).update(mark=-1)
+    await manager.done()
+
+
 homeworks_dialog = Dialog(
     Window(
         Emojize(_(":package: <b>Доступные задания</b>")),
@@ -142,22 +177,46 @@ homeworks_dialog = Dialog(
         Emojize(
             Jinja(
                 _("""
-:package: Контейнер {{ container.name }} › Решение {{ homework.id }}
+:package: <b>Контейнер {{ container.name }} › Решение {{ homework.id }}</b>
 Отправил {{ homework.owner.fio }} в {{ created_at }}
 
 {% if homework.text %}
 <blockquote expandable>{{ homework.text }}</blockquote>
+
+{% endif %}
+{% if homework.mark == -1 %}
+:no_entry: <b>Выставлен незачёт</b>
+{% elif homework.mark %}
+:hash: <b>Выставлена оценка {{ homework.mark }}</b>
 {% endif %}
 """)
             )
         ),
-        Button(
-            Emojize(_(":inbox_tray: Скачать")),
-            "download_homework",
-            download_homework,
+        DynamicMedia("media"),
+        # Button(
+        #     Emojize(_(":inbox_tray: Скачать")),
+        #     "download_homework",
+        #     download_homework,
+        # ),
+        StartWithSameData(
+            Emojize(_(":hash: Выставить оценку")),
+            "add_mark",
+            HomeworksSG.add_mark,
+            when="has_no_mark",
         ),
         BACK,
         getter=homework_view_getter,
         state=HomeworksSG.view,
+    ),
+    Window(
+        Emojize(_(":hash: Введи оценку целым числом:")),
+        MessageInput(add_mark_handler, ContentType.TEXT),
+        Button(
+            Emojize(_(":no_entry: Незачёт")),
+            "add_mark",
+            add_empty_mark,
+        ),
+        BACK,
+        state=HomeworksSG.add_mark,
     ),
 )

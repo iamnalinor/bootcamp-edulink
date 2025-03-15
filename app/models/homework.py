@@ -9,3 +9,4 @@ class Homework(Model):
     name = fields.TextField()
     text = fields.TextField(null=True)
     file_id = fields.TextField()
+    mark = fields.IntField(null=True)

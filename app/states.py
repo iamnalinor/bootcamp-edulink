@@ -46,3 +46,4 @@ class ContainersSG(StatesGroup):
 class HomeworksSG(StatesGroup):
     intro = State()
     view = State()
+    add_mark = State()
