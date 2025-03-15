@@ -18,7 +18,7 @@ from aiogram_dialog.widgets.kbd import (
 )
 from aiogram_dialog.widgets.text import Format, Jinja
 
-from app.misc import BACK, client
+from app.misc import BACK, get_client
 from app.models import Container, Homework
 from app.states import HomeworksSG
 from app.utils import lazy_gettext as _
@@ -83,7 +83,7 @@ async def download_homework_all(
             [
                 asyncio.create_task(
                     bot.download(
-                        homework.file_id, f"{tmpdir}/{homework.id}-{homework.name}"
+                        homework.file_id, f"{tmpdir}/{homework.id:04d}-{homework.name}"
                     )
                 )
                 for homework in homeworks
@@ -96,7 +96,7 @@ async def download_homework_all(
 
     zipio.seek(0)
     zipio.name = f"container_{container_id}.zip"
-    await client.send_document(chat_id=call.from_user.id, document=zipio)
+    await get_client().send_document(chat_id=call.from_user.id, document=zipio)
 
     await manager.show(ShowMode.SEND)
 

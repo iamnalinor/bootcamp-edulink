@@ -2,13 +2,14 @@ import logging
 
 from aiogram import types
 from aiogram_dialog import setup_dialogs
+from pyrogram import Client
 from tortoise import Tortoise, connections
 
-from app import monkeypatch  # noqa
+from app import config, monkeypatch  # noqa
 from app.config import TORTOISE_ORM
 from app.dialogs import dialogs
 from app.middlewares import ACLMiddleware, DatabaseI18nMiddleware
-from app.misc import bot, client, dp, i18n
+from app.misc import bot, dp, get_client, i18n, set_client
 
 logging.basicConfig(
     level=logging.INFO,
@@ -40,12 +41,19 @@ async def on_startup() -> None:
         scope=types.BotCommandScopeAllPrivateChats(),
     )
 
+    client = Client(
+        "my_bot",
+        api_id=config.API_ID,
+        api_hash=config.API_HASH,
+        bot_token=config.BOT_TOKEN,
+    )
+    set_client(client)
     await client.start()
 
 
 @dp.shutdown()
 async def on_shutdown() -> None:
-    await client.stop()
+    await get_client().stop()
     await connections.close_all()
 
 

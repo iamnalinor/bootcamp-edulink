@@ -10,7 +10,7 @@ from aiogram_dialog.widgets.kbd import Back, Cancel, Start
 from aiogram_dialog.widgets.text import Const
 from pyrogram import Client
 
-from app.config import API_HASH, API_ID, BOT_TOKEN, DEFAULT_LOCALE, REDIS_URL
+from app.config import BOT_TOKEN, DEFAULT_LOCALE, REDIS_URL
 from app.states import MainSG
 from app.utils import lazy_gettext as _
 from app.widgets import Emojize
@@ -23,7 +23,7 @@ dp = Dispatcher(
     if REDIS_URL
     else MemoryStorage()
 )
-client = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+_client: Client | None = None
 
 i18n = I18n(path="locales/", default_locale=DEFAULT_LOCALE.lang_code)
 
@@ -36,3 +36,12 @@ HOME = Start(
     state=MainSG.intro,
     mode=StartMode.RESET_STACK,
 )
+
+
+def get_client() -> Client:
+    return _client
+
+
+def set_client(client2: Client) -> None:
+    global _client
+    _client = client2
