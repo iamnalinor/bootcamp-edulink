@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-03-15 11:02+0300\n"
+"POT-Creation-Date: 2025-03-15 12:53+0300\n"
 "PO-Revision-Date: 2025-03-15 10:33+0300\n"
 "Last-Translator: \n"
 "Language: en\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: app/misc.py:22
+#: app/misc.py:30
 msgid "‹ Назад"
 msgstr "‹ Back"
 
-#: app/misc.py:26
+#: app/misc.py:34
 msgid ":house: Домой"
 msgstr ":house: Home"
 
@@ -42,7 +42,7 @@ msgid ""
 "После создания можно поделиться ссылкой на контейнер, по которой студенты"
 " будут загружать решения.\n"
 "\n"
-"Введи название:"
+"Введи название задания:"
 msgstr ""
 "You can store solutions to assignments in <b>containers</b>. One "
 "assignment per group of students — one container.\n"
@@ -50,7 +50,7 @@ msgstr ""
 "Once created, you can share a link to the container for students to "
 "download solutions.\n"
 "\n"
-"Enter a name:"
+"Enter the name of assignment:"
 
 #: app/dialogs/container_create.py:86
 msgid "Введи описание задания:"
