@@ -23,6 +23,11 @@ class MainSG(StatesGroup):
     intro = State()
 
 
+class SettingsSG(StatesGroup):
+    intro = State()
+    choose_lang = State()
+
+
 class ContainerCreateSG(StatesGroup):
     name = State()
     description = State()

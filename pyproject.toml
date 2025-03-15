@@ -1,0 +1,35 @@
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+force-exclude = true
+
+[tool.ruff.lint]
+select = [
+    "F",  # Pyflakes
+    "W",  # pycodestyle
+    "E",  # pycodestyle
+    "C90",  # mccabe
+    "I",  # isort
+    "N",  # PEP8 naming
+    "UP",  # pyupgrade
+    "ANN",  # flake8-annotations
+    "B",  # flake8-bugbear
+    "A",  # flake8-builtins
+    "COM",  # flake8-commas
+    "Q",  # flake8-quotes
+    "RSE",  # flake8-raise
+    "RET",  # flake8-return
+    "LOG",  # flake8-logging
+    "SIM",  # flake8-simplify
+    "TID",  # flake8-tidy-imports
+    "TCH",  # flake8-type-checking
+    "PTH",  # flake8-use-pathlib
+    "PL",  # pylint
+]
+ignore = [
+    "ANN401",  # any-type
+    "COM812",  # missing-trailing-comma
+    "E712",  # true-false-comparsion
+    "E501",  # line-too-long
+]

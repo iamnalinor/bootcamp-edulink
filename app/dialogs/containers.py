@@ -6,17 +6,17 @@ import re
 from typing import Any
 
 import PyPDF2
-from aiogram import F, Bot, types
-from aiogram.types import User, BufferedInputFile
-from aiogram_dialog import Dialog, Window, DialogManager
+from aiogram import Bot, F, types
+from aiogram.types import BufferedInputFile, User
+from aiogram_dialog import Dialog, DialogManager, Window
 from aiogram_dialog.widgets.input import MessageInput
 from aiogram_dialog.widgets.kbd import (
+    Button,
     Next,
     ScrollingGroup,
     Select,
-    Button,
 )
-from aiogram_dialog.widgets.text import Const, Jinja, Case, Format
+from aiogram_dialog.widgets.text import Case, Const, Format, Jinja
 from tortoise.expressions import Q
 
 from app import config
@@ -25,6 +25,7 @@ from app.models import Container, Homework
 from app.services.gpt import summarize_homework_text
 from app.states import ContainersSG, HomeworksSG
 from app.utils import get_short_fio
+from app.utils import lazy_gettext as _
 from app.widgets import Emojize, StartWithSameData
 
 logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ logger = logging.getLogger(__name__)
 async def containers_getter(user: User, **__):
     return {
         "containers": await Container.filter(
-            (Q(owner=user) | (Q(participants=user) & ~Q(is_archived=True)))
+            Q(owner=user) | (Q(participants=user) & ~Q(is_archived=True))
         ).prefetch_related("owner"),
     }
 
@@ -64,14 +65,22 @@ async def archive_container(__, ___, manager: DialogManager) -> None:
     await manager.back()
 
 
-async def homework_handler(message: types.Message, __, manager: DialogManager) -> None:
-    if message.document and message.document.file_size > (5 * 1024 * 1024):
-        await message.answer("Размер файла должен быть не больше 5 МБ.")
+async def homework_handler(
+    message: types.Message, __: MessageInput, manager: DialogManager
+) -> None:
+    if message.document and message.document.file_size > (
+        config.FILE_SIZE_LIMIT_MB * 1024 * 1024
+    ):
+        await message.answer(
+            _("Размер файла должен быть не больше {n} МБ.").format(
+                n=config.FILE_SIZE_LIMIT_MB
+            )
+        )
         return
 
     parts = message.document.file_name.rsplit(".", maxsplit=1)
     if len(parts) == 1:
-        await message.answer("Неверное имя файла.")
+        await message.answer(_("Неверное имя файла."))
         return
 
     file_name, file_ext = parts
@@ -80,7 +89,7 @@ async def homework_handler(message: types.Message, __, manager: DialogManager) -
     bot: Bot = manager.middleware_data["bot"]
     user = manager.middleware_data["user"]
 
-    await message.answer("Обработка...\n\nЭто займет до 30 секунд.")
+    await message.answer(_("Обработка...\n\nЭто займет до 30 секунд."))
 
     f = io.BytesIO()
     await bot.download(message.document.file_id, f)
@@ -114,13 +123,17 @@ async def homework_handler(message: types.Message, __, manager: DialogManager) -
         file_id=sent.document.file_id,
         name=name,
     )
-    await message.answer(f"Отправлено! ID решения — <code>{homework.id}</code>")
+    await message.answer(
+        _("Отправлено! ID решения — <code>{homework.id}</code>").format(
+            homework=homework
+        )
+    )
     await manager.done()
 
 
 containers_dialog = Dialog(
     Window(
-        Emojize(":package: <b>Доступные контейнеры</b>"),
+        Emojize(_(":package: <b>Доступные контейнеры</b>")),
         ScrollingGroup(
             Select(
                 Case(
@@ -148,7 +161,8 @@ containers_dialog = Dialog(
     ),
     Window(
         Emojize(
-            Jinja("""
+            Jinja(
+                _("""
 :package: <b>Контейнер {{ container.name }}</b> › Просмотр
 {% if container.is_archived %}:lock: Архивирован
 {% elif container.deadline %}Дедлайн <b>{{ container.deadline.strftime('%d.%m.%Y') }} 23:59 МСК</b>
@@ -160,27 +174,28 @@ containers_dialog = Dialog(
 {% if homework_sent %}:white_check_mark: Отправлено решение под ID <code>{{ homework_sent.id }}</code>
 {% endif %}
 """)
+            )
         ),
         StartWithSameData(
-            Emojize(":heavy_plus_sign: Загрузить решение"),
+            Emojize(_(":heavy_plus_sign: Загрузить решение")),
             "add_homework",
             state=ContainersSG.add_homework,
             when=~F["container"].is_archived & ~F["homework_sent"],
         ),
         StartWithSameData(
-            Emojize(":mailbox_with_mail: Решения"),
+            Emojize(_(":mailbox_with_mail: Решения")),
             "homeworks_list",
             state=HomeworksSG.intro,
             when=F["is_owner"],
         ),
         StartWithSameData(
-            Emojize(":link: Поделиться ссылкой"),
+            Emojize(_(":link: Поделиться ссылкой")),
             "share_link",
             state=ContainersSG.share_link,
             when=F["is_owner"],
         ),
         StartWithSameData(
-            Emojize(":lock: Архивировать"),
+            Emojize(_(":lock: Архивировать")),
             id="archive_container",
             state=ContainersSG.confirm_archive,
             when=~F["container"].is_archived & F["is_owner"],
@@ -191,8 +206,10 @@ containers_dialog = Dialog(
     ),
     Window(
         Jinja(
-            "Присоединиться к контейнеру {{ container.name }} можно по ссылке:\n\n"
-            "{{ invite_link }}"
+            _(
+                "Присоединиться к контейнеру {{ container.name }} можно по ссылке:\n\n"
+                "{{ invite_link }}"
+            )
         ),
         BACK,
         getter=container_view_getter,
@@ -201,13 +218,15 @@ containers_dialog = Dialog(
     Window(
         Emojize(
             Jinja(
-                ":warning: Ты хочешь архивировать контейнер <b>{{ container.name }}</b>. "
-                "Он будет скрыт у студентов.\n\n"
-                "Ты уверен? Это действие нельзя отменить."
+                _(
+                    ":warning: Ты хочешь архивировать контейнер <b>{{ container.name }}</b>. "
+                    "Он будет скрыт у студентов.\n\n"
+                    "Ты уверен? Это действие нельзя отменить."
+                )
             )
         ),
         Button(
-            Const("Да, я уверен"),
+            Const(_("Да, я уверен")),
             id="confirm_archive",
             on_click=archive_container,
         ),
@@ -216,9 +235,10 @@ containers_dialog = Dialog(
         state=ContainersSG.confirm_archive,
     ),
     Window(
-        Emojize(":memo: Отправь решение задания текстом или файлом до 5 МБ."),
+        Emojize(_(":memo: Отправь решение задания текстом или файлом до {limit} МБ.")),
         MessageInput(homework_handler),
         BACK,
         state=ContainersSG.add_homework,
+        getter={"limit": config.FILE_SIZE_LIMIT_MB},
     ),
 )

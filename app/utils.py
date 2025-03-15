@@ -7,8 +7,11 @@ import string
 from collections.abc import Coroutine
 
 from aiogram import types
+from aiogram.utils.i18n.context import lazy_gettext as _lazy_gettext
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.widget_event import ensure_event_processor
+from babel import Locale
+from babel.support import LazyProxy
 
 
 def rnd_id() -> str:
@@ -53,3 +56,23 @@ def maybe_next(manager: DialogManager) -> Coroutine[None, None, None]:
 def get_short_fio(fio: str) -> str:
     names = fio.split()
     return names[0] + "".join([name[0] for name in names[1:]])
+
+
+def parse_ietf_tag(tag: str) -> str:
+    """
+    Parses IETF language tag, returning two-letter ISO 639-1 code.
+    :param tag: IETF language tag
+    :return: ISO 639-1 code
+    """
+    return Locale.parse(tag, sep="-").language
+
+
+def lazy_gettext(*args, **kwargs) -> LazyProxy | str:
+    """
+    Lazy gettext function.
+
+    The function does not return str, but return is annotated as str to
+    help type hinters.
+    """
+
+    return _lazy_gettext(*args, **kwargs)

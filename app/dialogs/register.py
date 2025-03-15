@@ -10,15 +10,18 @@ from aiogram_dialog.widgets.text import Const
 
 from app.misc import HOME
 from app.states import RegisterSG
+from app.utils import lazy_gettext as _
 from app.utils import maybe_next
 from app.widgets import Emojize
 
 logger = logging.getLogger(__name__)
 
 
-async def save_fio(message: types.Message, __, manager: DialogManager):
+async def save_fio(
+    message: types.Message, __: MessageInput, manager: DialogManager
+) -> None:
     fio = message.text
-    if len(fio.split()) < 2 or not re.fullmatch(r"[а-яА-ЯёЁ ]+", fio):
+    if len(fio.split()) < 2 or not re.fullmatch(r"[а-яА-ЯёЁ\w ]+", fio):
         await message.answer("Некорректное ФИО.")
         return
 
@@ -30,13 +33,18 @@ async def save_fio(message: types.Message, __, manager: DialogManager):
 
 register_dialog = Dialog(
     Window(
-        Const("Добро пожаловать в EduLink!\n\nВведи своё ФИО:"),
+        Const(
+            _(
+                "Добро пожаловать в EduLink!\n\n"
+                "Введи своё ФИО. Пример: Иванов Иван Иванович"
+            )
+        ),
         MessageInput(save_fio, ContentType.TEXT),
         state=RegisterSG.fio,
         preview_add_transitions=[Next()],
     ),
     Window(
-        Emojize(":party_popper: Ты зарегистрировался!"),
+        Emojize(_(":party_popper: Ты зарегистрировался!")),
         HOME,
         state=RegisterSG.outro,
     ),

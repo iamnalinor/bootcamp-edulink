@@ -2,14 +2,15 @@ import datetime
 import logging
 
 from aiogram import types
-from aiogram_dialog import Dialog, Window, DialogManager, ShowMode
+from aiogram_dialog import Dialog, DialogManager, ShowMode, Window
 from aiogram_dialog.widgets.input import TextInput
-from aiogram_dialog.widgets.kbd import Next, Button, CalendarConfig, Calendar, Start
+from aiogram_dialog.widgets.kbd import Button, Calendar, CalendarConfig, Next, Start
 from aiogram_dialog.widgets.text import Const
 
 from app.misc import BACK, BACK_STATE
 from app.models import Container, User
 from app.states import ContainerCreateSG, ContainersSG
+from app.utils import lazy_gettext as _
 from app.widgets import Emojize
 
 logger = logging.getLogger(__name__)
@@ -19,7 +20,9 @@ async def container_name_filter(message: types.Message, user: User, *__):
     name_exists = await Container.filter(name=message.text, owner=user).exists()
     if name_exists:
         await message.answer(
-            "Это имя уже занято. Попробуй добавить номер группы, дату или год обучения."
+            _(
+                "Это имя уже занято. Попробуй добавить номер группы, дату или год обучения."
+            )
         )
         return False
     return True
@@ -47,7 +50,7 @@ async def deadline_selected(
 ):
     if date < datetime.date.today():
         await call.answer(
-            "Нельзя выбирать дату в прошлом. Попробуй ещё раз.",
+            _("Нельзя выбирать дату в прошлом. Попробуй ещё раз."),
             show_alert=True,
         )
         return
@@ -58,7 +61,15 @@ async def deadline_selected(
 
 container_create_dialog = Dialog(
     Window(
-        Const("Создаём новый контейнер.\n\nВведи название:"),
+        Const(
+            _(
+                "Ты можешь хранить решения заданий в <b>контейнерах</b>. "
+                "Одно задание на группу студентов — один контейнер.\n\n"
+                "После создания можно поделиться ссылкой на контейнер, "
+                "по которой студенты будут загружать решения.\n\n"
+                "Введи название:"
+            )
+        ),
         BACK,
         TextInput(
             "i_container_name",
@@ -69,15 +80,17 @@ container_create_dialog = Dialog(
         preview_add_transitions=[Next()],
     ),
     Window(
-        Const("Введи описание задания:"),
+        Const(_("Введи описание задания:")),
         TextInput("i_container_description", on_success=Next()),
-        Next(Const("Пропустить")),
+        Next(Const(_("Пропустить"))),
         BACK_STATE,
         state=ContainerCreateSG.description,
     ),
     Window(
         Emojize(
-            ":calendar: Выбери срок задания. Дедлайн наступит в 23:59 МСК в этот день:"
+            _(
+                ":calendar: Выбери срок задания. Дедлайн наступит в 23:59 МСК в этот день:"
+            )
         ),
         Calendar(
             id="location_date",
@@ -85,14 +98,14 @@ container_create_dialog = Dialog(
             config=CalendarConfig(min_date=datetime.date(2025, 3, 1)),
         ),
         TextInput("i_container_deadline", on_success=Next()),
-        Next(Const("Пропустить")),
+        Next(Const(_("Пропустить"))),
         BACK_STATE,
         state=ContainerCreateSG.deadline,
     ),
     Window(
-        Const("Всё готово! Нажми на кнопку, чтобы завершить создание."),
+        Const(_("Всё готово! Нажми на кнопку, чтобы завершить создание.")),
         Button(
-            Emojize(":fire: Создать контейнер"),
+            Emojize(_(":fire: Создать контейнер")),
             id="container_open",
             on_click=container_create,
         ),

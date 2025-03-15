@@ -1,4 +1,6 @@
 import os
+from collections import namedtuple
+
 from envparse import env
 
 env.read_envfile()
@@ -18,3 +20,13 @@ TORTOISE_ORM = {
         },
     },
 }
+
+Locale = namedtuple("Locale", ["lang_code", "flag", "name"])
+LOCALES = {
+    "en": Locale("en", ":United_States:", "English"),
+    "ru": Locale("ru", ":Russia:", "Русский"),
+}
+DEFAULT_LOCALE = LOCALES["en"]
+
+FIGMA_URL = "https://www.figma.com/proto/nIJ6EyZJLfZpVtuLm9qmT2/Untitled?page-id=0%3A1&node-id=1-545&p=f&viewport=-60%2C173%2C0.29&t=IshnLMZRA7KhXim3-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=1%3A545"
+FILE_SIZE_LIMIT_MB = 5

@@ -12,22 +12,49 @@ from aiogram_dialog.api.exceptions import (
 )
 from aiogram_dialog.widgets.kbd import Start
 from aiogram_dialog.widgets.text import Format
+from emoji import emojize
 
+from app import config
+from app.config import LOCALES
 from app.misc import dp
-from app.models import User, Container
+from app.models import Container, User
 from app.states import (
+    ContainerCreateSG,
+    ContainersSG,
     MainSG,
     RegisterSG,
-    ContainersSG,
-    ContainerCreateSG,
+    SettingsSG,
 )
+from app.utils import lazy_gettext as _
+from app.utils import parse_ietf_tag
 from app.widgets import Emojize
 
 logger = logging.getLogger(__name__)
 
 
 @dp.message(CommandStart())
-async def start_cmd(message: types.Message, user: User, dialog_manager: DialogManager):
+async def start_cmd(
+    message: types.Message, user: User, dialog_manager: DialogManager
+) -> None:
+    if user.lang_code is None:
+        user.lang_code = parse_ietf_tag(message.from_user.language_code)
+        await user.save()
+
+        logger.debug("Language for user %d has been set to %s", user.id, user.lang_code)
+
+        i18n = dialog_manager.middleware_data["i18n"]
+        i18n.current_locale = user.lang_code
+
+        locale = LOCALES[user.lang_code]
+        await message.answer(
+            emojize(
+                _(
+                    "Установлен язык {locale.flag} {locale.name}. "
+                    "Ты можешь изменить его по команде /settings."
+                ).format(locale=locale)
+            )
+        )
+
     if not user.registered:
         await dialog_manager.start(RegisterSG.fio, mode=StartMode.RESET_STACK)
         return
@@ -44,10 +71,15 @@ async def start_cmd(message: types.Message, user: User, dialog_manager: DialogMa
         )
         if container:
             if user in [container.owner, *container.participants]:
-                await message.answer("Ты уже находишься в этом контейнере.")
+                await message.answer(
+                    _("Ты уже находишься в этом контейнере."), parse_mode=None
+                )
             else:
                 await message.answer(
-                    f"Ты присоединился к контейнеру {container.name}!", parse_mode=None
+                    _("Ты присоединился к контейнеру {container.name}!").format(
+                        container=container
+                    ),
+                    parse_mode=None,
                 )
                 await container.participants.add(user)
 
@@ -56,15 +88,14 @@ async def start_cmd(message: types.Message, user: User, dialog_manager: DialogMa
                 {"container_id": container.id},
             )
             return
-        else:
-            await message.answer("Контейнер не найден.")
+        await message.answer(_("Контейнер не найден."))
 
     await dialog_manager.show()
 
 
 @dp.message(Command("show"))
 @dp.callback_query(F.data == "show_menu")
-async def show_cmd(update, dialog_manager: DialogManager):
+async def show_cmd(__: types.Update, dialog_manager: DialogManager) -> None:
     await dialog_manager.show(ShowMode.SEND)
 
 
@@ -73,37 +104,53 @@ async def show_cmd(update, dialog_manager: DialogManager):
         UnknownIntent, OutdatedIntent, UnknownState, DialogStackOverflow
     )
 )
-async def error_handler(exception: types.Update, dialog_manager: DialogManager):
+async def error_handler(exception: types.Update, dialog_manager: DialogManager) -> None:
     logger.exception("Error in dialog manager for user")
 
     await dialog_manager.reset_stack()
 
     update = exception.update.message or exception.update.callback_query or None
     if update:
-        await update.answer("Произошла ошибка. Пожалуйста, нажми /start")
+        await update.answer(_("Произошла ошибка. Пожалуйста, нажми /start"))
 
 
-async def name_getter(user: User, event_from_user: types.User, **_) -> dict[str, Any]:
+async def name_getter(
+    user: User, event_from_user: types.User, **__: Any
+) -> dict[str, Any]:
+    try:
+        name = user.name
+    except Exception:
+        logger.exception("Failed when getting user.name, falled back to first_name")
+        name = event_from_user.first_name
+
     return {
-        "first_name": user.fio.split()[1] or event_from_user.first_name,
+        "first_name": name,
+        "figma_url": config.FIGMA_URL,
     }
 
 
 start_dialog = Dialog(
     Window(
         Format(
-            "Привет, {first_name}!\n\n"
-            "<a href='https://www.figma.com/proto/nIJ6EyZJLfZpVtuLm9qmT2/Untitled?page-id=0%3A1&node-id=1-545&p=f&viewport=-60%2C173%2C0.29&t=IshnLMZRA7KhXim3-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=1%3A545'>Открыть макет в Figma</a>"
+            _(
+                "Привет, {first_name}!\n\n"
+                "<a href='{figma_url}'>Открыть макет в Figma</a>"
+            )
         ),
         Start(
-            Emojize(":heavy_plus_sign: Новый контейнер"),
+            Emojize(_(":heavy_plus_sign: Новый контейнер")),
             "container_create",
             state=ContainerCreateSG.name,
         ),
         Start(
-            Emojize(":package: Контейнеры"),
+            Emojize(_(":package: Контейнеры")),
             "containers",
             state=ContainersSG.intro,
+        ),
+        Start(
+            Emojize(_(":gear: Настройки")),
+            "settings",
+            state=SettingsSG.intro,
         ),
         state=MainSG.intro,
         getter=name_getter,

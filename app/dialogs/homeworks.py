@@ -8,20 +8,21 @@ from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
-from aiogram import types, Bot
-from aiogram.types import User, BufferedInputFile
-from aiogram_dialog import Dialog, Window, DialogManager, ShowMode
+from aiogram import Bot, types
+from aiogram.types import BufferedInputFile, User
+from aiogram_dialog import Dialog, DialogManager, ShowMode, Window
 from aiogram_dialog.widgets.kbd import (
+    Button,
     Next,
     ScrollingGroup,
     Select,
-    Button,
 )
-from aiogram_dialog.widgets.text import Jinja, Format
+from aiogram_dialog.widgets.text import Format, Jinja
 
 from app.misc import BACK
-from app.models import Homework, Container
+from app.models import Container, Homework
 from app.states import HomeworksSG
+from app.utils import lazy_gettext as _
 from app.widgets import Emojize
 
 logger = logging.getLogger(__name__)
@@ -38,20 +39,24 @@ async def homeworks_getter(user: User, dialog_manager: DialogManager, **__):
     }
 
 
-async def open_homework(__, ___, manager: DialogManager, homework_id: str):
+async def open_homework(
+    __: types.CallbackQuery, ___: Button, manager: DialogManager, homework_id: str
+):
     await manager.start(
         HomeworksSG.view, data=manager.start_data | {"homework_id": int(homework_id)}
     )
 
 
-async def homework_view_getter(dialog_manager: DialogManager, **__) -> dict[str, Any]:
+async def homework_view_getter(
+    dialog_manager: DialogManager, **__: Any
+) -> dict[str, Any]:
     container_id = dialog_manager.start_data["container_id"]
     container = await Container.get(id=container_id).prefetch_related("owner")
     homework_id = dialog_manager.start_data["homework_id"]
     homework = await Homework.get(id=homework_id).prefetch_related("owner", "container")
 
     created_at = (homework.created_at + timedelta(hours=3)).strftime(
-        "%d.%m.%Y %H:%M:%S МСК"
+        "%d.%m.%Y %H:%M:%S UTC+3"
     )
 
     return {
@@ -66,7 +71,7 @@ async def download_homework_all(call: types.CallbackQuery, __, manager: DialogMa
     homeworks = await Homework.filter(container_id=container_id)
     bot: Bot = manager.middleware_data["bot"]
 
-    await call.answer("Выгружаем решения...")
+    await call.answer(_("Выгружаем решения..."))
 
     zipio = io.BytesIO()
 
@@ -105,9 +110,9 @@ async def download_homework(
 
 homeworks_dialog = Dialog(
     Window(
-        Emojize(":package: <b>Доступные задания</b>"),
+        Emojize(_(":package: <b>Доступные задания</b>")),
         Button(
-            Emojize(":inbox_tray: Скачать все"),
+            Emojize(_(":inbox_tray: Скачать все")),
             "download_homework_all",
             download_homework_all,
         ),
@@ -131,7 +136,8 @@ homeworks_dialog = Dialog(
     ),
     Window(
         Emojize(
-            Jinja("""
+            Jinja(
+                _("""
 :package: Контейнер {{ container.name }} › Решение {{ homework.id }}
 Отправил {{ homework.owner.fio }} в {{ created_at }}
 
@@ -139,9 +145,10 @@ homeworks_dialog = Dialog(
 <blockquote expandable>{{ homework.text }}</blockquote>
 {% endif %}
 """)
+            )
         ),
         Button(
-            Emojize(":inbox_tray: Скачать"),
+            Emojize(_(":inbox_tray: Скачать")),
             "download_homework",
             download_homework,
         ),

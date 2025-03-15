@@ -1,0 +1,291 @@
+# English translations for PROJECT.
+# Copyright (C) 2025 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-03-15 08:42+0300\n"
+"PO-Revision-Date: 2025-03-15 08:42+0300\n"
+"Last-Translator: \n"
+"Language-Team: en <LL@li.org>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Generated-By: Babel 2.17.0\n"
+"X-Generator: Poedit 3.4.2\n"
+
+#: app/misc.py:20
+msgid "‹ Назад"
+msgstr "‹ Back"
+
+#: app/misc.py:24
+msgid ":house: Домой"
+msgstr ":house: Home"
+
+#: app/dialogs/container_create.py:24
+msgid "Это имя уже занято. Попробуй добавить номер группы, дату или год обучения."
+msgstr "This name is already taken. Try adding a group number or year of study."
+
+#: app/dialogs/container_create.py:53
+msgid "Нельзя выбирать дату в прошлом. Попробуй ещё раз."
+msgstr "You can't pick a date in the past. Try again."
+
+#: app/dialogs/container_create.py:66
+msgid ""
+"Ты можешь хранить решения заданий в <b>контейнерах</b>. Одно задание на группу "
+"студентов — один контейнер.\n"
+"\n"
+"После создания можно поделиться ссылкой на контейнер, по которой студенты будут "
+"загружать решения.\n"
+"\n"
+"Введи название:"
+msgstr ""
+"You can store solutions to assignments in <b>containers</b>. One assignment per "
+"group of students — one container.\n"
+"\n"
+"Once created, you can share a link to the container for students to download "
+"solutions.\n"
+"\n"
+"Enter a name:"
+
+#: app/dialogs/container_create.py:83
+msgid "Введи описание задания:"
+msgstr "Enter the assignment description:"
+
+#: app/dialogs/container_create.py:85 app/dialogs/container_create.py:101
+msgid "Пропустить"
+msgstr "Skip"
+
+#: app/dialogs/container_create.py:92
+msgid ":calendar: Выбери срок задания. Дедлайн наступит в 23:59 МСК в этот день:"
+msgstr ""
+":calendar: Pick a deadline for the assignment. The deadline will be at 23:59 "
+"UTC+3 on that day:"
+
+#: app/dialogs/container_create.py:106
+msgid "Всё готово! Нажми на кнопку, чтобы завершить создание."
+msgstr "All done! Click the button to complete the creation."
+
+#: app/dialogs/container_create.py:108
+msgid ":fire: Создать контейнер"
+msgstr ":fire: Create the container"
+
+#: app/dialogs/containers.py:75
+#, python-brace-format
+msgid "Размер файла должен быть не больше {n} МБ."
+msgstr "The file size should be no larger than {n} MB."
+
+#: app/dialogs/containers.py:83
+msgid "Неверное имя файла."
+msgstr "Invalid file name."
+
+#: app/dialogs/containers.py:92
+msgid ""
+"Обработка...\n"
+"\n"
+"Это займет до 30 секунд."
+msgstr ""
+"Processing...\n"
+"\n"
+"It'll take up to 30 seconds."
+
+#: app/dialogs/containers.py:127
+#, python-brace-format
+msgid "Отправлено! ID решения — <code>{homework.id}</code>"
+msgstr "Done! The solution ID is <code>{homework.id}</code>"
+
+#: app/dialogs/containers.py:136
+msgid ":package: <b>Доступные контейнеры</b>"
+msgstr ":package: <b>Available containers</b>"
+
+#: app/dialogs/containers.py:165
+#, python-format, python-brace-format
+msgid ""
+"\n"
+":package: <b>Контейнер {{ container.name }}</b> › Просмотр\n"
+"{% if container.is_archived %}:lock: Архивирован\n"
+"{% elif container.deadline %}Дедлайн <b>{{ container.deadline.strftime('%d.%m."
+"%Y') }} 23:59 МСК</b>\n"
+"{% endif %}\n"
+"\n"
+"{% if container.description %}<blockquote expandable>{{ container.description }}"
+"</blockquote>\n"
+"\n"
+"{% endif %}\n"
+"{% if homework_sent %}:white_check_mark: Отправлено решение под ID "
+"<code>{{ homework_sent.id }}</code>\n"
+"{% endif %}\n"
+msgstr ""
+"\n"
+":package: <b>Container {{ container.name }}</b> › View\n"
+"{% if container.is_archived %}:lock: Archived\n"
+"{% elif container.deadline <b>%}Deadline is at {{ container.deadline."
+"strftime('%d.%</b>m. <b>%Y') }} 23:59 UTC+3</b>\n"
+"{% endif %}\n"
+"\n"
+"{% if container.description %}{{ container.<blockquote expandable>description }}"
+"</blockquote>\n"
+"\n"
+"{% endif %}\n"
+"{% if homework_sent %}:white_check_mark: You sent solution under ID "
+"<code>{{ homework_sent.id }}</code>\n"
+"{% endif %}\n"
+
+#: app/dialogs/containers.py:180
+msgid ":heavy_plus_sign: Загрузить решение"
+msgstr ":heavy_plus_sign: Upload the solution"
+
+#: app/dialogs/containers.py:186
+msgid ":mailbox_with_mail: Решения"
+msgstr ":mailbox_with_mail: Solutions"
+
+#: app/dialogs/containers.py:192
+msgid ":link: Поделиться ссылкой"
+msgstr ":link: Share"
+
+#: app/dialogs/containers.py:198
+msgid ":lock: Архивировать"
+msgstr ":lock: Archive"
+
+#: app/dialogs/containers.py:210
+msgid ""
+"Присоединиться к контейнеру {{ container.name }} можно по ссылке:\n"
+"\n"
+"{{ invite_link }}"
+msgstr ""
+"Join container {{ container.name }} by clicking this link:\n"
+"\n"
+"{{ invite_link }}"
+
+#: app/dialogs/containers.py:222
+msgid ""
+":warning: Ты хочешь архивировать контейнер <b>{{ container.name }}</b>. Он "
+"будет скрыт у студентов.\n"
+"\n"
+"Ты уверен? Это действие нельзя отменить."
+msgstr ""
+":warning: You want to archive the <b>{{ container.name }}</b> container. It "
+"will be hidden from the students.\n"
+"\n"
+"Are you sure? This action cannot be undone."
+
+#: app/dialogs/containers.py:229
+msgid "Да, я уверен"
+msgstr "Yes, I'm sure"
+
+#: app/dialogs/containers.py:238
+#, python-brace-format
+msgid ":memo: Отправь решение задания текстом или файлом до {limit} МБ."
+msgstr ""
+":memo: Submit the solution to the assignment in text or file up to {limit} MB."
+
+#: app/dialogs/homeworks.py:74
+msgid "Выгружаем решения..."
+msgstr "Downloading solutions..."
+
+#: app/dialogs/homeworks.py:113
+msgid ":package: <b>Доступные задания</b>"
+msgstr ":package: <b>Available assignments</b>"
+
+#: app/dialogs/homeworks.py:115
+msgid ":inbox_tray: Скачать все"
+msgstr ":inbox_tray: Download all"
+
+#: app/dialogs/homeworks.py:140
+#, python-format, python-brace-format
+msgid ""
+"\n"
+":package: Контейнер {{ container.name }} › Решение {{ homework.id }}\n"
+"Отправил {{ homework.owner.fio }} в {{ created_at }}\n"
+"\n"
+"{% if homework.text %}\n"
+"<blockquote expandable>{{ homework.text }}</blockquote>\n"
+"{% endif %}\n"
+msgstr ""
+"\n"
+":package: Container {{ container.name }} › Solution {{ homework.id }}\n"
+"Sent by {{ homework.owner.fio }} at {{ created_at }}\n"
+"\n"
+"{% if homework.text %}}\n"
+"<blockquote expandable>{{ homework.text }}</blockquote>\n"
+"{% endif %}\n"
+
+#: app/dialogs/homeworks.py:151
+msgid ":inbox_tray: Скачать"
+msgstr ":inbox_tray: Download"
+
+#: app/dialogs/register.py:38
+msgid ""
+"Добро пожаловать в EduLink!\n"
+"\n"
+"Введи своё ФИО. Пример: Иванов Иван Иванович"
+msgstr ""
+"Welcome to EduLink!\n"
+"\n"
+"Enter your full name. Example: John Doe"
+
+#: app/dialogs/register.py:47
+msgid ":party_popper: Ты зарегистрировался!"
+msgstr ":party_popper: Registration completed!"
+
+#: app/dialogs/settings.py:60 app/dialogs/start.py:151
+msgid ":gear: Настройки"
+msgstr ":gear: Settings"
+
+#: app/dialogs/settings.py:62
+msgid ":white_flag: Изменить язык"
+msgstr ":white_flag: Change language"
+
+#: app/dialogs/settings.py:70
+msgid ":white_flag: Выбери язык:"
+msgstr ":white_flag: Pick a language:"
+
+#: app/dialogs/start.py:52
+#, python-brace-format
+msgid ""
+"Установлен язык {locale.flag} {locale.name}. Ты можешь изменить его по команде /"
+"settings."
+msgstr ""
+"Language has been set to {locale.flag} {locale.name}. You can change it in /"
+"settings."
+
+#: app/dialogs/start.py:75
+msgid "Ты уже находишься в этом контейнере."
+msgstr "You're already joined that container."
+
+#: app/dialogs/start.py:79
+#, python-brace-format
+msgid "Ты присоединился к контейнеру {container.name}!"
+msgstr "You have joined container {container.name}!"
+
+#: app/dialogs/start.py:91
+msgid "Контейнер не найден."
+msgstr "Container not found."
+
+#: app/dialogs/start.py:114
+msgid "Произошла ошибка. Пожалуйста, нажми /start"
+msgstr "An error occurred. Please press /start"
+
+#: app/dialogs/start.py:136
+#, python-brace-format
+msgid ""
+"Привет, {first_name}!\n"
+"\n"
+"<a href='{figma_url}'>Открыть макет в Figma</a>"
+msgstr ""
+"Hello, {first_name}!\n"
+"\n"
+"<a href='{figma_url}'>Open Figma layout</a>"
+
+#: app/dialogs/start.py:141
+msgid ":heavy_plus_sign: Новый контейнер"
+msgstr ":heavy_plus_sign: New container"
+
+#: app/dialogs/start.py:146
+msgid ":package: Контейнеры"
+msgstr ":package: Containers"
