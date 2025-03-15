@@ -66,9 +66,10 @@ async def start_cmd(
 
     if message.text.startswith("/start cjoin_"):
         code = message.text[len("/start cjoin_") :]
-        container = await Container.get(invite_code=code).prefetch_related(
+        container = await Container.get_or_none(invite_code=code).prefetch_related(
             "owner", "participants"
         )
+
         if container:
             if user in [container.owner, *container.participants]:
                 await message.answer(
@@ -88,6 +89,7 @@ async def start_cmd(
                 {"container_id": container.id},
             )
             return
+
         await message.answer(_("Контейнер не найден."))
 
     await dialog_manager.show()
@@ -111,7 +113,7 @@ async def error_handler(exception: types.Update, dialog_manager: DialogManager) 
 
     update = exception.update.message or exception.update.callback_query or None
     if update:
-        await update.answer(_("Произошла ошибка. Пожалуйста, нажми /start"))
+        await update.answer("An error occurred. Please press /start")
 
 
 async def name_getter(

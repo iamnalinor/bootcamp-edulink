@@ -1,5 +1,6 @@
 import datetime
 import logging
+from typing import Any
 
 from aiogram import types
 from aiogram_dialog import Dialog, DialogManager, ShowMode, Window
@@ -16,7 +17,7 @@ from app.widgets import Emojize
 logger = logging.getLogger(__name__)
 
 
-async def container_name_filter(message: types.Message, user: User, *__):
+async def container_name_filter(message: types.Message, user: User, *__: Any) -> bool:
     name_exists = await Container.filter(name=message.text, owner=user).exists()
     if name_exists:
         await message.answer(
@@ -28,7 +29,9 @@ async def container_name_filter(message: types.Message, user: User, *__):
     return True
 
 
-async def container_create(__, ___, manager: DialogManager):
+async def container_create(
+    __: types.CallbackQuery, ___: Button, manager: DialogManager
+) -> None:
     user = manager.middleware_data["user"]
     deadline = manager.dialog_data.get("deadline")
     container = await Container.create(
@@ -44,10 +47,10 @@ async def container_create(__, ___, manager: DialogManager):
 
 async def deadline_selected(
     call: types.CallbackQuery,
-    __,
+    __: Button,
     manager: DialogManager,
     date: datetime.date,
-):
+) -> None:
     if date < datetime.date.today():
         await call.answer(
             _("Нельзя выбирать дату в прошлом. Попробуй ещё раз."),

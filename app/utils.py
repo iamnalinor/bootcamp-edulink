@@ -5,6 +5,7 @@ Utility functions.
 import random
 import string
 from collections.abc import Coroutine
+from typing import Any
 
 from aiogram import types
 from aiogram.utils.i18n.context import lazy_gettext as _lazy_gettext
@@ -32,7 +33,7 @@ def escape(text: str) -> str:
 
 
 @ensure_event_processor
-async def on_error(message: types.Message, *__) -> None:
+async def on_error(message: types.Message, *__: Any) -> None:
     """
     Event processor for invalid inputs.
     :param message: Message to be answered
@@ -67,7 +68,7 @@ def parse_ietf_tag(tag: str) -> str:
     return Locale.parse(tag, sep="-").language
 
 
-def lazy_gettext(*args, **kwargs) -> LazyProxy | str:
+def lazy_gettext(*args: Any, **kwargs: Any) -> LazyProxy | str:
     """
     Lazy gettext function.
 

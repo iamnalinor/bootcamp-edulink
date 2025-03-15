@@ -13,7 +13,7 @@ class StartWithSameData(Start):
         callback: CallbackQuery,
         button: Button,
         manager: DialogManager,
-    ):
+    ) -> None:
         if self.user_on_click:
             await self.user_on_click(callback, self, manager)
 

@@ -1,9 +1,10 @@
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from aiogram.types import TelegramObject
 from aiogram.utils.i18n import SimpleI18nMiddleware
 
-from app.models import User
+if TYPE_CHECKING:
+    from app.models import User
 
 
 class DatabaseI18nMiddleware(SimpleI18nMiddleware):

@@ -17,11 +17,15 @@ from app.widgets import Emojize
 logger = logging.getLogger(__name__)
 
 
+FIO_MIN_PARTS_COUNT = 2
+FIO_REGEX = re.compile(r"[а-яА-ЯёЁ\w ]+")
+
+
 async def save_fio(
     message: types.Message, __: MessageInput, manager: DialogManager
 ) -> None:
     fio = message.text
-    if len(fio.split()) < 2 or not re.fullmatch(r"[а-яА-ЯёЁ\w ]+", fio):
+    if len(fio.split()) < FIO_MIN_PARTS_COUNT or not FIO_REGEX.fullmatch(fio):
         await message.answer("Некорректное ФИО.")
         return
 

@@ -1,11 +1,12 @@
 import logging
 import operator
+from typing import Any
 
 from aiogram import types
 from aiogram.filters import Command
 from aiogram_dialog import Dialog, DialogManager, Window
-from aiogram_dialog.widgets.kbd import Column, Radio, Start
-from aiogram_dialog.widgets.text import Const, Format
+from aiogram_dialog.widgets.kbd import Button, Column, Radio, Start
+from aiogram_dialog.widgets.text import Format
 from aiogram_dialog.widgets.widget_event import SimpleEventProcessor
 
 from app.config import DEFAULT_LOCALE, LOCALES
@@ -30,7 +31,9 @@ async def settings_cmd(
     await dialog_manager.start(SettingsSG.intro)
 
 
-async def locales_getter(dialog_manager: DialogManager, user: User, **__):
+async def locales_getter(
+    dialog_manager: DialogManager, user: User, **__: Any
+) -> dict[str, Any]:
     lang_code = user.lang_code or DEFAULT_LOCALE
 
     radio = dialog_manager.find("r_locales")
@@ -40,8 +43,8 @@ async def locales_getter(dialog_manager: DialogManager, user: User, **__):
 
 
 async def set_lang_code(
-    _,
-    __,
+    __: types.CallbackQuery,
+    ___: Button,
     dialog_manager: DialogManager,
     lang_code: str,
 ) -> None:
@@ -59,7 +62,7 @@ settings_dialog = Dialog(
     Window(
         Emojize(_(":gear: Настройки")),
         Start(
-            Const(_(":white_flag: Изменить язык")),
+            Emojize(_(":white_flag: Изменить язык")),
             id="change_lang",
             state=SettingsSG.choose_lang,
         ),

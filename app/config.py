@@ -5,9 +5,12 @@ from envparse import env
 
 env.read_envfile()
 BOT_TOKEN = env.str("BOT_TOKEN")
+REDIS_URL = env.str("REDIS_URL", "")
 UPLOAD_FILES_CHAT_ID = env.int("UPLOAD_FILES_CHAT_ID")
 YANDEX_API_KEY = env.str("YANDEX_API_KEY")
 YANDEX_FOLDER_ID = env.str("YANDEX_FOLDER_ID")
+API_ID = env.int("API_ID")
+API_HASH = env.str("API_HASH")
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite://db.sqlite3")
 

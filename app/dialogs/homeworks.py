@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Any
 
 from aiogram import Bot, types
-from aiogram.types import BufferedInputFile, User
 from aiogram_dialog import Dialog, DialogManager, ShowMode, Window
 from aiogram_dialog.widgets.kbd import (
     Button,
@@ -19,7 +18,7 @@ from aiogram_dialog.widgets.kbd import (
 )
 from aiogram_dialog.widgets.text import Format, Jinja
 
-from app.misc import BACK
+from app.misc import BACK, client
 from app.models import Container, Homework
 from app.states import HomeworksSG
 from app.utils import lazy_gettext as _
@@ -28,7 +27,7 @@ from app.widgets import Emojize
 logger = logging.getLogger(__name__)
 
 
-async def homeworks_getter(user: User, dialog_manager: DialogManager, **__):
+async def homeworks_getter(dialog_manager: DialogManager, **__: Any) -> dict[str, Any]:
     container_id = dialog_manager.start_data["container_id"]
     container = await Container.get(id=container_id).prefetch_related("owner")
     return {
@@ -41,7 +40,7 @@ async def homeworks_getter(user: User, dialog_manager: DialogManager, **__):
 
 async def open_homework(
     __: types.CallbackQuery, ___: Button, manager: DialogManager, homework_id: str
-):
+) -> None:
     await manager.start(
         HomeworksSG.view, data=manager.start_data | {"homework_id": int(homework_id)}
     )
@@ -66,12 +65,16 @@ async def homework_view_getter(
     }
 
 
-async def download_homework_all(call: types.CallbackQuery, __, manager: DialogManager):
+async def download_homework_all(
+    call: types.CallbackQuery, __: Button, manager: DialogManager
+) -> None:
     container_id = manager.start_data["container_id"]
     homeworks = await Homework.filter(container_id=container_id)
     bot: Bot = manager.middleware_data["bot"]
 
-    await call.answer(_("Выгружаем решения..."))
+    await call.answer(
+        _("Выгружаем решения. Это займёт некоторое время"), show_alert=True
+    )
 
     zipio = io.BytesIO()
 
@@ -91,16 +94,17 @@ async def download_homework_all(call: types.CallbackQuery, __, manager: DialogMa
             for file in Path(tmpdir).glob("*"):
                 zipf.write(file, file.name)
 
-    await call.message.answer_document(
-        BufferedInputFile(
-            file=zipio.getvalue(), filename=f"container_{container_id}.zip"
-        ),
-    )
+    zipio.seek(0)
+    zipio.name = f"container_{container_id}.zip"
+    await client.send_document(chat_id=call.from_user.id, document=zipio)
+
     await manager.show(ShowMode.SEND)
 
 
 async def download_homework(
-    call: types.CallbackQuery, __, manager: DialogManager
+    call: types.CallbackQuery,
+    __: Button,
+    manager: DialogManager,
 ) -> None:
     homework_id = manager.start_data["homework_id"]
     homework = await Homework.get(id=homework_id)

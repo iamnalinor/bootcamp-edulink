@@ -1,0 +1,47 @@
+services:
+  bot:
+    env_file:
+      - path: .env
+        required: false
+    build:
+      context: .
+    stop_signal: SIGKILL
+    restart: on-failure
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/postgres
+
+  redis:
+    image: redis:7-alpine
+    restart: on-failure
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+  postgres:
+    image: postgres:15-alpine
+    restart: on-failure
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  redis_data:
+  postgres_data:

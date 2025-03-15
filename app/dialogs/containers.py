@@ -31,7 +31,7 @@ from app.widgets import Emojize, StartWithSameData
 logger = logging.getLogger(__name__)
 
 
-async def containers_getter(user: User, **__):
+async def containers_getter(user: User, **__: Any) -> dict[str, Any]:
     return {
         "containers": await Container.filter(
             Q(owner=user) | (Q(participants=user) & ~Q(is_archived=True))
@@ -39,12 +39,14 @@ async def containers_getter(user: User, **__):
     }
 
 
-async def open_container(__, ___, manager: DialogManager, container_id: str):
+async def open_container(
+    __: types.CallbackQuery, ___: Button, manager: DialogManager, container_id: str
+) -> None:
     await manager.start(ContainersSG.view, data={"container_id": int(container_id)})
 
 
 async def container_view_getter(
-    dialog_manager: DialogManager, bot: Bot, user: User, **__
+    dialog_manager: DialogManager, bot: Bot, user: User, **__: Any
 ) -> dict[str, Any]:
     container_id = dialog_manager.start_data["container_id"]
     container = await Container.get(id=container_id).prefetch_related("owner")
@@ -58,62 +60,84 @@ async def container_view_getter(
     }
 
 
-async def archive_container(__, ___, manager: DialogManager) -> None:
+async def archive_container(
+    __: types.CallbackQuery, ___: Button, manager: DialogManager
+) -> None:
     container_id = manager.start_data["container_id"]
     container = await Container.get(id=container_id)
     await container.update_from_dict({"is_archived": True}).save()
     await manager.back()
 
 
+async def message_to_buffer(message: types.Message) -> io.BytesIO:
+    if message.text:
+        return io.BytesIO(message.text.encode())
+
+    buffer = io.BytesIO()
+    await message.bot.download(message.document.file_id, buffer)
+    return buffer
+
+
+async def get_file_title(file_name: str, file_ext: str, buffer: io.BytesIO) -> str:
+    match file_ext:
+        case "pdf":
+            pdf_reader = PyPDF2.PdfReader(buffer)
+            text = "".join([page.extract_text() for page in pdf_reader.pages])
+            title = "_" + await summarize_homework_text(text)
+        case "txt":
+            try:
+                text = buffer.read().decode("utf-8")
+            except UnicodeError:
+                title = ""
+            else:
+                title = "_" + await summarize_homework_text(text)
+        case _:
+            title = re.sub(r"[\s\-]", "-", re.sub(r"[^a-zA-Z0-9\s_\-]", "", file_name))
+
+    return title
+
+
 async def homework_handler(
     message: types.Message, __: MessageInput, manager: DialogManager
 ) -> None:
-    if message.document and message.document.file_size > (
-        config.FILE_SIZE_LIMIT_MB * 1024 * 1024
-    ):
-        await message.answer(
-            _("Размер файла должен быть не больше {n} МБ.").format(
-                n=config.FILE_SIZE_LIMIT_MB
+    if message.document:
+        if message.document.file_size > (config.FILE_SIZE_LIMIT_MB * 1024 * 1024):
+            await message.answer(
+                _("Размер файла должен быть не больше {n} МБ.").format(
+                    n=config.FILE_SIZE_LIMIT_MB
+                )
             )
-        )
-        return
+            return
 
-    parts = message.document.file_name.rsplit(".", maxsplit=1)
-    if len(parts) == 1:
-        await message.answer(_("Неверное имя файла."))
-        return
+        parts = message.document.file_name.rsplit(".", maxsplit=1)
+        if len(parts) == 1:
+            await message.answer(_("Неверное имя файла."))
+            return
 
-    file_name, file_ext = parts
-    file_ext = file_ext.lower()
+        file_name, file_ext = parts
+        file_ext = file_ext.lower()
+    else:
+        file_name = ""
+        file_ext = "txt"
 
     bot: Bot = manager.middleware_data["bot"]
     user = manager.middleware_data["user"]
 
     await message.answer(_("Обработка...\n\nЭто займет до 30 секунд."))
-
-    f = io.BytesIO()
-    await bot.download(message.document.file_id, f)
-
-    match file_ext:
-        case "pdf":
-            pdf_reader = PyPDF2.PdfReader(f)
-            text = "".join([page.extract_text() for page in pdf_reader.pages])
-            title = "_" + await summarize_homework_text(text)
-        case _:
-            title = re.sub(r"[\s\-]", "-", re.sub(r"[^a-zA-Z0-9\s_\-]", "", file_name))
+    buffer = await message_to_buffer(message)
+    title = await get_file_title(file_name, file_ext, buffer)
 
     name = (
         get_short_fio(user.fio)
         + "_"
         + datetime.datetime.now().strftime("%d_%m")
-        + title
+        + title[:30].rstrip("_-")
         + "."
-        + parts[-1]
+        + file_ext
     )
-    f.seek(0)
     sent = await bot.send_document(
         config.UPLOAD_FILES_CHAT_ID,
-        BufferedInputFile(f.read(), filename=name),
+        BufferedInputFile(buffer.getvalue(), filename=name),
     )
 
     homework = await Homework.create(
@@ -235,7 +259,11 @@ containers_dialog = Dialog(
         state=ContainersSG.confirm_archive,
     ),
     Window(
-        Emojize(_(":memo: Отправь решение задания текстом или файлом до {limit} МБ.")),
+        Emojize(
+            Format(
+                _(":memo: Отправь решение задания текстом или файлом до {limit} МБ.")
+            )
+        ),
         MessageInput(homework_handler),
         BACK,
         state=ContainersSG.add_homework,

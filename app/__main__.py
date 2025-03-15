@@ -8,7 +8,7 @@ from app import monkeypatch  # noqa
 from app.config import TORTOISE_ORM
 from app.dialogs import dialogs
 from app.middlewares import ACLMiddleware, DatabaseI18nMiddleware
-from app.misc import bot, dp, i18n
+from app.misc import bot, client, dp, i18n
 
 logging.basicConfig(
     level=logging.INFO,
@@ -40,9 +40,12 @@ async def on_startup() -> None:
         scope=types.BotCommandScopeAllPrivateChats(),
     )
 
+    await client.start()
+
 
 @dp.shutdown()
 async def on_shutdown() -> None:
+    await client.stop()
     await connections.close_all()
 
 

@@ -6,3 +6,4 @@ envparse==0.2.0
 emoji==2.14.1
 pypdf2==3.0.1
 babel==2.17.0
+kurigram==2.1.39

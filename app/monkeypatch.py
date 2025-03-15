@@ -8,8 +8,11 @@ The following changes are made:
 3. Cast self.template_text to str when initializing Jinja widget.
 """
 
+from typing import Any
+
 from aiogram.methods.base import TelegramMethod
 from aiogram.types.base import TelegramObject
+from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.text.base import Text
 from aiogram_dialog.widgets.text.jinja import (
     JINJA_ENV_FIELD,
@@ -20,7 +23,7 @@ from babel.support import LazyProxy
 
 
 class CustomTelegramMethod(TelegramMethod):  # noqa
-    def __init__(self, /, **kwargs):
+    def __init__(self, /, **kwargs: Any) -> None:
         if LazyProxy is not None:
             for key, value in kwargs.items():
                 if isinstance(value, LazyProxy):
@@ -30,7 +33,7 @@ class CustomTelegramMethod(TelegramMethod):  # noqa
 
 
 class CustomTelegramObject(TelegramObject):
-    def __init__(self, /, **kwargs):
+    def __init__(self, /, **kwargs: Any) -> None:
         if LazyProxy is not None:
             for key, value in kwargs.items():
                 if isinstance(value, LazyProxy):
@@ -45,7 +48,7 @@ TelegramMethod.__init__ = CustomTelegramMethod.__init__
 TelegramMethod.__pydantic_base_init__ = True
 
 
-async def text_render_text(self, data, manager) -> str:
+async def text_render_text(self: Text, data: dict, manager: DialogManager) -> str:
     if not self.is_(data, manager):
         return ""
 
@@ -55,7 +58,7 @@ async def text_render_text(self, data, manager) -> str:
 Text.render_text = text_render_text
 
 
-async def jinja_render_text(self, data, manager) -> str:
+async def jinja_render_text(self: Jinja, data: dict, manager: DialogManager) -> str:
     if JINJA_ENV_FIELD in manager.middleware_data:
         env = manager.middleware_data[JINJA_ENV_FIELD]
     else:

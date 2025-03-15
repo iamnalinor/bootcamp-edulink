@@ -1,3 +1,5 @@
+from typing import Any
+
 import emoji
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.text import Const
@@ -9,7 +11,7 @@ class Emojize(Const):
     Besides str, it can accept LazyProxy and Text objects as well.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     async def _render_text(

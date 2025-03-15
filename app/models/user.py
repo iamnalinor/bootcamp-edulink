@@ -10,7 +10,7 @@ class User(Model):
     fio = fields.TextField(null=True)
     lang_code = fields.CharField(max_length=2, null=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"User #{self.id} {self.fio or ''}"
 
     @property

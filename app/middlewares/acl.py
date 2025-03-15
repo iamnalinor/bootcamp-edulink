@@ -1,6 +1,9 @@
 import logging
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 from aiogram import BaseMiddleware
+from aiogram.types import TelegramObject
 
 from app.models.user import User
 
@@ -14,10 +17,10 @@ class ACLMiddleware(BaseMiddleware):
 
     async def __call__(
         self,
-        handler,
-        event,
-        data,
-    ):
+        handler: Callable[[TelegramObject, dict[str, Any]], Awaitable[Any]],
+        event: TelegramObject,
+        data: dict[str, Any],
+    ) -> Any:
         if (event_user := data.get("event_from_user")) and "user" not in data:
             user = await User.get_or_none(id=event_user.id)
             if user is None:

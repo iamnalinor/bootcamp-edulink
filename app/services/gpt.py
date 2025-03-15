@@ -1,9 +1,16 @@
+import logging
+
 import aiohttp
 
 from app import config
 
+logger = logging.getLogger(__name__)
+
 
 async def summarize_homework_text(text: str) -> str:
+    if text == "":
+        return ""
+
     gpt_model = "yandexgpt-lite"
 
     body = {
@@ -40,5 +47,6 @@ async def summarize_homework_text(text: str) -> str:
                 f"timeout waiting for response for operation {operation_id}"
             )
 
+    logger.info("Response from Yandex Cloud: %s", response)
     answer = response["response"]["alternatives"][0]["message"]["text"]
     return " ".join([i.strip() for i in answer.split(",")]).replace(" ", "_")
