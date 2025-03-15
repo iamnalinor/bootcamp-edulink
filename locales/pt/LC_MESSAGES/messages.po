@@ -20,19 +20,19 @@ msgstr ""
 
 #: app/misc.py:30
 msgid "‹ Назад"
-msgstr ""
+msgstr "‹ Voltar"
 
 #: app/misc.py:34
 msgid ":house: Домой"
-msgstr ""
+msgstr ":house: Início"
 
 #: app/dialogs/container_create.py:25
 msgid "Это имя уже занято. Попробуй добавить номер группы, дату или год обучения."
-msgstr ""
+msgstr "Este nome já está em uso. Tente adicionar um número de grupo, data ou ano de estudo."
 
 #: app/dialogs/container_create.py:56
 msgid "Нельзя выбирать дату в прошлом. Попробуй ещё раз."
-msgstr ""
+msgstr "Não é possível selecionar uma data no passado. Tente novamente."
 
 #: app/dialogs/container_create.py:69
 msgid ""
@@ -44,35 +44,42 @@ msgid ""
 "\n"
 "Введи название задания:"
 msgstr ""
+"Você pode armazenar soluções de tarefas em <b>contêineres</b>. Uma tarefa para "
+"um grupo de estudantes — um contêiner.\n"
+"\n"
+"Após a criação, você pode compartilhar um link para o contêiner, onde os estudantes "
+"poderão enviar suas soluções.\n"
+"\n"
+"Digite o nome da tarefa:"
 
 #: app/dialogs/container_create.py:86
 msgid "Введи описание задания:"
-msgstr ""
+msgstr "Digite a descrição da tarefa:"
 
 #: app/dialogs/container_create.py:88 app/dialogs/container_create.py:104
 msgid "Пропустить"
-msgstr ""
+msgstr "Pular"
 
 #: app/dialogs/container_create.py:95
 msgid ":calendar: Выбери срок задания. Дедлайн наступит в 23:59 МСК в этот день:"
-msgstr ""
+msgstr ":calendar: Escolha o prazo da tarefa. O prazo final será às 23:59 MSK neste dia:"
 
 #: app/dialogs/container_create.py:109
 msgid "Всё готово! Нажми на кнопку, чтобы завершить создание."
-msgstr ""
+msgstr "Tudo pronto! Clique no botão para finalizar a criação."
 
 #: app/dialogs/container_create.py:111
 msgid ":fire: Создать контейнер"
-msgstr ""
+msgstr ":fire: Criar contêiner"
 
 #: app/dialogs/containers.py:106
 #, python-brace-format
 msgid "Размер файла должен быть не больше {n} МБ."
-msgstr ""
+msgstr "O tamanho do arquivo não deve exceder {n} MB."
 
 #: app/dialogs/containers.py:114
 msgid "Неверное имя файла."
-msgstr ""
+msgstr "Nome de arquivo inválido."
 
 #: app/dialogs/containers.py:126
 msgid ""
@@ -80,15 +87,18 @@ msgid ""
 "\n"
 "Это займет до 30 секунд."
 msgstr ""
+"Processando...\n"
+"\n"
+"Isso levará até 30 segundos."
 
 #: app/dialogs/containers.py:151
 #, python-brace-format
 msgid "Отправлено! ID решения — <code>{homework.id}</code>"
-msgstr ""
+msgstr "Enviado! ID da solução — <code>{homework.id}</code>"
 
 #: app/dialogs/containers.py:160
 msgid ":package: <b>Доступные контейнеры</b>"
-msgstr ""
+msgstr ":package: <b>Contêineres disponíveis</b>"
 
 #: app/dialogs/containers.py:189
 #, python-brace-format, python-format
@@ -108,22 +118,36 @@ msgid ""
 "<code>{{ homework_sent.id }}</code>\n"
 "{% endif %}\n"
 msgstr ""
+"\n"
+":package: <b>Contêiner {{ container.name }}</b> › Visualização\n"
+"{% if container.is_archived %}:lock: Arquivado\n"
+"{% elif container.deadline %}Prazo final <b>{{ "
+"container.deadline.strftime('%d.%m.%Y') }} 23:59 MSK</b>\n"
+"{% endif %}\n"
+"\n"
+"{% if container.description %}<blockquote expandable>{{ "
+"container.description }}</blockquote>\n"
+"\n"
+"{% endif %}\n"
+"{% if homework_sent %}:white_check_mark: Solução enviada com ID "
+"<code>{{ homework_sent.id }}</code>\n"
+"{% endif %}\n"
 
 #: app/dialogs/containers.py:204
 msgid ":heavy_plus_sign: Загрузить решение"
-msgstr ""
+msgstr ":heavy_plus_sign: Carregar solução"
 
 #: app/dialogs/containers.py:210
 msgid ":mailbox_with_mail: Решения"
-msgstr ""
+msgstr ":mailbox_with_mail: Soluções"
 
 #: app/dialogs/containers.py:216
 msgid ":link: Поделиться ссылкой"
-msgstr ""
+msgstr ":link: Compartilhar link"
 
 #: app/dialogs/containers.py:222
 msgid ":lock: Архивировать"
-msgstr ""
+msgstr ":lock: Arquivar"
 
 #: app/dialogs/containers.py:234
 msgid ""
@@ -131,6 +155,9 @@ msgid ""
 "\n"
 "{{ invite_link }}"
 msgstr ""
+"Você pode se juntar ao contêiner {{ container.name }} pelo link:\n"
+"\n"
+"{{ invite_link }}"
 
 #: app/dialogs/containers.py:246
 msgid ""
@@ -139,59 +166,63 @@ msgid ""
 "\n"
 "Ты уверен? Это действие нельзя отменить."
 msgstr ""
+":warning: Você quer arquivar o contêiner <b>{{ container.name }}</b>. "
+"Ele ficará oculto para os estudantes.\n"
+"\n"
+"Você tem certeza? Esta ação não pode ser desfeita."
 
 #: app/dialogs/containers.py:253
 msgid "Да, я уверен"
-msgstr ""
+msgstr "Sim, tenho certeza"
 
 #: app/dialogs/containers.py:264
 #, python-brace-format
 msgid ":memo: Отправь решение задания текстом или файлом до {limit} МБ."
-msgstr ""
+msgstr ":memo: Envie a solução da tarefa como texto ou arquivo até {limit} MB."
 
 #: app/dialogs/homeworks.py:89
 msgid "Выгружаем решения. Это займёт некоторое время"
-msgstr ""
+msgstr "Baixando soluções. Isso levará algum tempo"
 
 #: app/dialogs/homeworks.py:136
 msgid "Оценка должна быть целым неотрицательным числом."
-msgstr ""
+msgstr "A nota deve ser um número inteiro não negativo."
 
 #: app/dialogs/homeworks.py:165
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #: app/dialogs/homeworks.py:166
 msgid "Время отправки"
-msgstr ""
+msgstr "Hora do envio"
 
 #: app/dialogs/homeworks.py:167
 msgid "ФИО"
-msgstr ""
+msgstr "Nome completo"
 
 #: app/dialogs/homeworks.py:168
 msgid "Имя файла"
-msgstr ""
+msgstr "Nome do arquivo"
 
 #: app/dialogs/homeworks.py:169
 msgid "Оценка"
-msgstr ""
+msgstr "Nota"
 
 #: app/dialogs/homeworks.py:181
 msgid "Незачёт"
-msgstr ""
+msgstr "Reprovado"
 
 #: app/dialogs/homeworks.py:221
 msgid ":package: <b>Доступные задания</b>"
-msgstr ""
+msgstr ":package: <b>Tarefas disponíveis</b>"
 
 #: app/dialogs/homeworks.py:223
 msgid ":inbox_tray: Скачать файлы"
-msgstr ""
+msgstr ":inbox_tray: Baixar arquivos"
 
 #: app/dialogs/homeworks.py:228
 msgid ":hash: Скачать таблицу"
-msgstr ""
+msgstr ":hash: Baixar tabela"
 
 #: app/dialogs/homeworks.py:253
 #, python-brace-format, python-format
@@ -211,18 +242,31 @@ msgid ""
 ":hash: <b>Выставлена оценка {{ homework.mark }}</b>\n"
 "{% endif %}\n"
 msgstr ""
+"\n"
+":package: <b>Contêiner {{ container.name }} › Solução {{ homework.id }}</b>\n"
+"Enviado por {{ homework.owner.fio }} em {{ created_at }}\n"
+"\n"
+"{% if homework.text %}\n"
+"<blockquote expandable>{{ homework.text }}</blockquote>\n"
+"\n"
+"{% endif %}\n"
+"{% if homework.mark == -1 %}\n"
+":no_entry: <b>Reprovado</b>\n"
+"{% elif homework.mark %}\n"
+":hash: <b>Nota atribuída {{ homework.mark }}</b>\n"
+"{% endif %}\n"
 
 #: app/dialogs/homeworks.py:276
 msgid ":hash: Выставить оценку"
-msgstr ""
+msgstr ":hash: Atribuir nota"
 
 #: app/dialogs/homeworks.py:286
 msgid ":hash: Введи оценку целым числом:"
-msgstr ""
+msgstr ":hash: Digite a nota como um número inteiro:"
 
 #: app/dialogs/homeworks.py:289
 msgid ":no_entry: Незачёт"
-msgstr ""
+msgstr ":no_entry: Reprovado"
 
 #: app/dialogs/register.py:42
 msgid ""
@@ -230,22 +274,25 @@ msgid ""
 "\n"
 "Введи своё ФИО. Пример: Иванов Иван Иванович"
 msgstr ""
+"Bem-vindo ao EduLink!\n"
+"\n"
+"Digite seu nome completo. Exemplo: João Silva Santos"
 
 #: app/dialogs/register.py:51
 msgid ":party_popper: Ты зарегистрировался!"
-msgstr ""
+msgstr ":party_popper: Você se registrou!"
 
 #: app/dialogs/settings.py:63 app/dialogs/start.py:153
 msgid ":gear: Настройки"
-msgstr ""
+msgstr ":gear: Configurações"
 
 #: app/dialogs/settings.py:65
 msgid ":white_flag: Изменить язык"
-msgstr ""
+msgstr ":white_flag: Alterar idioma"
 
 #: app/dialogs/settings.py:73
 msgid ":white_flag: Выбери язык:"
-msgstr ""
+msgstr ":white_flag: Escolha o idioma:"
 
 #: app/dialogs/start.py:52
 #, python-brace-format
@@ -253,19 +300,21 @@ msgid ""
 "Установлен язык {locale.flag} {locale.name}. Ты можешь изменить его по "
 "команде /settings."
 msgstr ""
+"Idioma definido para {locale.flag} {locale.name}. Você pode alterá-lo usando "
+"o comando /settings."
 
 #: app/dialogs/start.py:76
 msgid "Ты уже находишься в этом контейнере."
-msgstr ""
+msgstr "Você já está neste contêiner."
 
 #: app/dialogs/start.py:80
 #, python-brace-format
 msgid "Ты присоединился к контейнеру {container.name}!"
-msgstr ""
+msgstr "Você se juntou ao contêiner {container.name}!"
 
 #: app/dialogs/start.py:93
 msgid "Контейнер не найден."
-msgstr ""
+msgstr "Contêiner não encontrado."
 
 #: app/dialogs/start.py:138
 #, python-brace-format
@@ -274,12 +323,15 @@ msgid ""
 "\n"
 "<a href='{figma_url}'>Открыть макет в Figma</a>"
 msgstr ""
+"Olá, {first_name}!\n"
+"\n"
+"<a href='{figma_url}'>Abrir layout no Figma</a>"
 
 #: app/dialogs/start.py:143
 msgid ":heavy_plus_sign: Новый контейнер"
-msgstr ""
+msgstr ":heavy_plus_sign: Novo contêiner"
 
 #: app/dialogs/start.py:148
 msgid ":package: Контейнеры"
-msgstr ""
+msgstr ":package: Contêineres"
 

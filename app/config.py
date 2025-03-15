@@ -30,6 +30,7 @@ LOCALES = {
     "en": Locale("en", ":United_States:", "English"),
     "es": Locale("es", ":Spain:", "Español"),
     "zh": Locale("zh", ":China:", "中文"),
+    "pt": Locale("pt", ":Brazil:", "Português"),
 }
 DEFAULT_LOCALE = LOCALES["en"]
 
