@@ -1,8 +1,6 @@
 services:
   bot:
-    env_file:
-      - path: .env
-        required: false
+    env_file: .env
     build:
       context: .
     stop_signal: SIGKILL
