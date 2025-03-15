@@ -1,15 +1,18 @@
+import asyncio
 import logging
 
 import aiohttp
 
 from app import config
+from app.config import GPT_SYMBOLS_LIMIT
 
 logger = logging.getLogger(__name__)
 
 
 async def summarize_homework_text(text: str) -> str:
-    if text == "":
+    if text.strip() == "":
         return ""
+    text = text[:GPT_SYMBOLS_LIMIT]
 
     gpt_model = "yandexgpt-lite"
 
@@ -19,7 +22,18 @@ async def summarize_homework_text(text: str) -> str:
         "messages": [
             {
                 "role": "system",
-                "text": "Ты получаешь на вход текст домашней работы студента. Классифицируй домашние работы в подходящую категорию по принципу: предмет, тема. В ответе укажи только предмет и тему через зяпятую. Пример вывода номер 1: 'Искусственный интеллект, Свертончные нейронные сети'. Пример вывода номер 2: 'Биология, Генетика'. Пример вывода номер 3: 'Геометрия, Стереометрия'. Выводи строго не больше 3 слов.",
+                "text": (
+                    "Ты получаешь на вход текст домашней работы студента. "
+                    "Классифицируй домашние работы в подходящую категорию по принципу: предмет, тема. "
+                    "В ответе укажи только предмет и тему через зяпятую. "
+                    "Пример вывода номер 1: 'Искусственный интеллект, Свертончные нейронные сети'. "
+                    "Пример вывода номер 2: 'Биология, Генетика'. "
+                    "Пример вывода номер 3: 'Геометрия, Стереометрия'. "
+                    "Выводи строго не больше 3 слов. "
+                    "Если текст написан не на русском языке, выведи слова на том языке, "
+                    "на котором написан текст. "
+                    "Пример вывода 4: 'Math, Calculus'."
+                ),
             },
             {"role": "user", "text": text},
         ],
@@ -42,6 +56,7 @@ async def summarize_homework_text(text: str) -> str:
                 response = await resp.json()
                 if response["done"]:
                     break
+                await asyncio.sleep(2)
         else:
             raise RuntimeError(
                 f"timeout waiting for response for operation {operation_id}"
