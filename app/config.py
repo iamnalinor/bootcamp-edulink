@@ -26,8 +26,9 @@ TORTOISE_ORM = {
 
 Locale = namedtuple("Locale", ["lang_code", "flag", "name"])
 LOCALES = {
-    "en": Locale("en", ":United_States:", "English"),
     "ru": Locale("ru", ":Russia:", "Русский"),
+    "en": Locale("en", ":United_States:", "English"),
+    "es": Locale("es", ":Spain:", "Español"),
 }
 DEFAULT_LOCALE = LOCALES["en"]
 
