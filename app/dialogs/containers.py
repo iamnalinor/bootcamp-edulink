@@ -92,7 +92,7 @@ async def get_file_title(file_name: str, file_ext: str, buffer: io.BytesIO) -> s
             else:
                 title = "_" + await summarize_homework_text(text)
         case _:
-            title = re.sub(r"[\s\-]", "-", re.sub(r"[^a-zA-Z0-9\s_\-]", "", file_name))
+            title = re.sub(r"[\s\-]", "_", re.sub(r"[^a-zA-Z0-9\s_\-]", "", file_name))
 
     return title
 

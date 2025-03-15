@@ -65,5 +65,5 @@ async def summarize_homework_text(text: str) -> str:
 
     logger.info("Response from Yandex Cloud: %s", response)
     answer = response["response"]["alternatives"][0]["message"]["text"]
-    joined = " ".join([i.strip() for i in answer.split(",")])
+    joined = " ".join([i.strip() for i in answer.split(",")]).replace(" ", "_")
     return re.sub(r"['\".]", "", joined)

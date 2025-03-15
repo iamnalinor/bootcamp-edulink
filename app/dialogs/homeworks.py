@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import io
 import logging
 import operator
@@ -10,6 +11,7 @@ from typing import Any
 
 from aiogram import Bot, types
 from aiogram.enums import ContentType
+from aiogram.types import BufferedInputFile
 from aiogram_dialog import Dialog, DialogManager, ShowMode, Window
 from aiogram_dialog.api.entities import MediaAttachment, MediaId
 from aiogram_dialog.widgets.input import MessageInput
@@ -22,6 +24,8 @@ from aiogram_dialog.widgets.kbd import (
 from aiogram_dialog.widgets.media import DynamicMedia
 from aiogram_dialog.widgets.text import Format, Jinja
 from aiogram_dialog.widgets.widget_event import ensure_event_processor
+from openpyxl import Workbook
+from openpyxl.styles import Font
 
 from app.misc import BACK, get_client
 from app.models import Container, Homework
@@ -104,7 +108,7 @@ async def download_homework_all(
                 zipf.write(file, file.name)
 
     zipio.seek(0)
-    zipio.name = f"container_{container_id}.zip"
+    zipio.name = f"container_{container_id}_files.zip"
     await get_client().send_document(chat_id=call.from_user.id, document=zipio)
 
     await manager.show(ShowMode.SEND)
@@ -147,13 +151,83 @@ async def add_empty_mark(
     await manager.done()
 
 
+async def download_table(
+    call: types.CallbackQuery, __: Button, manager: DialogManager
+) -> None:
+    container_id = manager.start_data["container_id"]
+    container = await Container.get(id=container_id)
+    homeworks = await Homework.filter(container=container).prefetch_related("owner")
+
+    wb = Workbook()
+    ws = wb.active
+
+    headers = [
+        _("ID"),
+        _("Время отправки"),
+        _("ФИО"),
+        _("Имя файла"),
+        _("Оценка"),
+    ]
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col)
+        cell.value = str(header)
+        cell.font = Font(bold=True)
+
+    for row, homework in enumerate(homeworks, 2):
+        submitted_at = (homework.created_at + timedelta(hours=3)).strftime(
+            "%d.%m.%Y %H:%M:%S"
+        )
+        grade = (
+            _("Незачёт")
+            if homework.mark == -1
+            else str(homework.mark)
+            if homework.mark is not None
+            else ""
+        )
+        row_data = [
+            homework.id,
+            submitted_at,
+            homework.owner.fio,
+            homework.name,
+            str(grade),
+        ]
+
+        for col, value in enumerate(row_data, 1):
+            ws.cell(row=row, column=col, value=value)
+
+    # adjust column widths
+    for column_iter in ws.columns:
+        column = list(column_iter)
+        max_length = 0
+        for cell in column:
+            with contextlib.suppress(Exception):
+                max_length = max(max_length, len(str(cell.value)))
+        ws.column_dimensions[column[0].column_letter].width = max_length + 2
+
+    excel_file = io.BytesIO()
+    wb.save(excel_file)
+
+    await call.message.answer_document(
+        BufferedInputFile(
+            file=excel_file.getvalue(),
+            filename=f"container_{container.id}_grades.xlsx",
+        ),
+    )
+    await manager.show(ShowMode.SEND)
+
+
 homeworks_dialog = Dialog(
     Window(
         Emojize(_(":package: <b>Доступные задания</b>")),
         Button(
-            Emojize(_(":inbox_tray: Скачать все")),
+            Emojize(_(":inbox_tray: Скачать файлы")),
             "download_homework_all",
             download_homework_all,
+        ),
+        Button(
+            Emojize(_(":hash: Скачать таблицу")),
+            "download_table",
+            download_table,
         ),
         ScrollingGroup(
             Select(
